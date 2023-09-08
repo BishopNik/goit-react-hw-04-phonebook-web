@@ -1,5 +1,6 @@
 /** @format */
 
+import PropTypes from 'prop-types';
 import './style.css';
 
 function Filter({ value, onFiltred }) {
@@ -17,4 +18,10 @@ function Filter({ value, onFiltred }) {
 		</label>
 	);
 }
+
+Filter.propTypes = {
+	value: PropTypes.string.isRequired,
+	onFiltred: PropTypes.func.isRequired,
+};
+
 export default Filter;

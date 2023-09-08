@@ -1,6 +1,7 @@
 /** @format */
 
 import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import * as yup from 'yup';
 import { ToastContainer, toast } from 'react-toastify';
 import './style.css';
@@ -111,5 +112,24 @@ function ContactForm({ contacts, onSubmitForm, onEditValue, nameButton }) {
 		</>
 	);
 }
+
+ContactForm.propTypes = {
+	contacts: PropTypes.arrayOf(
+		PropTypes.exact({
+			id: PropTypes.string.isRequired,
+			name: PropTypes.string.isRequired,
+			number: PropTypes.string.isRequired,
+		})
+	).isRequired,
+	onEditValue: PropTypes.arrayOf(
+		PropTypes.exact({
+			id: PropTypes.string.isRequired,
+			name: PropTypes.string.isRequired,
+			number: PropTypes.string.isRequired,
+		})
+	).isRequired,
+	onSubmitForm: PropTypes.func.isRequired,
+	nameButton: PropTypes.string.isRequired,
+};
 
 export default ContactForm;

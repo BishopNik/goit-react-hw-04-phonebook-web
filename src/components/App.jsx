@@ -1,6 +1,7 @@
 /** @format */
 
 import { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import { ToastContainer, toast } from 'react-toastify';
 import * as API from './fetch_api';
 import Filter from './filter';
@@ -147,7 +148,7 @@ function App() {
 						progress: undefined,
 						theme: 'colored',
 					});
-					// updatedContacts.push(contact);
+					updatedContacts.push(contact);
 				}
 			} else {
 				updatedContacts.push(contact);
@@ -190,5 +191,10 @@ function App() {
 		</div>
 	);
 }
+
+App.propTypes = {
+	name: PropTypes.string,
+	number: PropTypes.string,
+};
 
 export default App;
