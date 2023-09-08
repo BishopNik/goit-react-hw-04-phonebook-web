@@ -39,6 +39,7 @@ ContactList.propTypes = {
 			id: PropTypes.string.isRequired,
 			name: PropTypes.string.isRequired,
 			number: PropTypes.string.isRequired,
+			edit: PropTypes.bool,
 		})
 	).isRequired,
 	enable: PropTypes.bool.isRequired,

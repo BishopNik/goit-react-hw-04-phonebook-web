@@ -119,15 +119,15 @@ ContactForm.propTypes = {
 			id: PropTypes.string.isRequired,
 			name: PropTypes.string.isRequired,
 			number: PropTypes.string.isRequired,
+			edit: PropTypes.bool,
 		})
 	).isRequired,
-	onEditValue: PropTypes.arrayOf(
-		PropTypes.exact({
-			id: PropTypes.string.isRequired,
-			name: PropTypes.string.isRequired,
-			number: PropTypes.string.isRequired,
-		})
-	).isRequired,
+	onEditValue: PropTypes.exact({
+		id: PropTypes.string.isRequired,
+		name: PropTypes.string.isRequired,
+		number: PropTypes.string.isRequired,
+		edit: PropTypes.bool,
+	}).isRequired,
 	onSubmitForm: PropTypes.func.isRequired,
 	nameButton: PropTypes.string.isRequired,
 };
