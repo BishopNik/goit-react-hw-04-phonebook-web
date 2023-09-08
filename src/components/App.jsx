@@ -1,168 +1,194 @@
 /** @format */
 
-import { Component } from 'react';
-import PropTypes from 'prop-types';
-import { Notify } from 'notiflix';
+import { useEffect, useState } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
 import * as API from './fetch_api';
 import Filter from './filter';
 import ContactList from './contact';
 import ContactForm from './forms';
 import './style.css';
 
-class App extends Component {
-	state = {
-		contacts: [
-			{ id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-			{ id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-			{ id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-			{ id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-		],
-		contact: { id: '', name: '', number: '', edit: false },
-		filter: '',
-		active: false,
-	};
+function App() {
+	const [contacts, setContacts] = useState([
+		{ id: 'id-1', name: 'Rosie Simpson', number: '459-12-56', edit: false },
+		{ id: 'id-2', name: 'Hermione Kline', number: '443-89-12', edit: false },
+		{ id: 'id-3', name: 'Eden Clements', number: '645-17-79', edit: false },
+		{ id: 'id-4', name: 'Annie Copeland', number: '227-91-26', edit: false },
+	]);
+	const [contact, setContact] = useState({ id: '', name: '', number: '', edit: false });
+	const [filter, setFilter] = useState('');
+	const [active, setActive] = useState(false);
+	const [filteredContacts, setFiltredContacts] = useState(contacts);
+	const [isFirstRender, setIsFilterRender] = useState(true);
+	const [button, setButton] = useState('Add contact');
 
-	static propTypes = {
-		name: PropTypes.string,
-		number: PropTypes.string,
-	};
+	useEffect(() => {
+		const filteredContacts = contacts.filter(contact => {
+			const searchName = contact.name.toLowerCase();
+			const filterName = filter.toLowerCase();
+			return searchName.includes(filterName);
+		});
+		setFiltredContacts(filteredContacts);
+	}, [filter, contacts]);
 
-	async componentDidMount() {
-		try {
-			const savedContacts = await API.fetchGet();
-			if (savedContacts.length > 0) {
-				this.setState({ contacts: savedContacts, filter: '' });
-			}
-		} catch ({ message }) {
-			Notify.failure(`${message}`);
+	useEffect(() => {
+		if (isFirstRender) {
+			setIsFilterRender(false);
+			return;
 		}
-		window.addEventListener('keydown', this.onClearForm);
-	}
+		async function fetchData() {
+			try {
+				const savedContacts = await API.fetchGet();
+				if (savedContacts.length > 0) {
+					setContacts(savedContacts);
+				}
+			} catch ({ message }) {
+				toast.error(`Error loading: ${message}`, {
+					position: 'top-right',
+					autoClose: 5000,
+					hideProgressBar: false,
+					closeOnClick: true,
+					pauseOnHover: true,
+					draggable: true,
+					progress: undefined,
+					theme: 'colored',
+				});
+			}
+		}
+		fetchData();
+	}, [isFirstRender]);
 
-	componentWillUnmount() {
-		window.removeEventListener('keydown', this.onClearForm);
-	}
-
-	handlerOnChange = ({ target }) => {
-		this.setState({
-			[target.name]: target.value,
-		});
+	const handlerOnFitred = ({ target }) => {
+		setFilter(target.value);
 	};
 
-	handlerOnFitred = ({ target }) => {
-		this.setState({
-			[target.name]: target.value,
-		});
-	};
-
-	handleAddContact = async newContact => {
+	const handleAddContact = async newContact => {
 		try {
-			if (this.state.contact.edit) {
+			if (contact.edit) {
 				const { id, name, number } = newContact;
 				const edCont = { id, name, number };
 				const editItem = await API.fetchPut(edCont);
-				this.savedContact(editItem);
+				savedContact(editItem);
+				setButton('Add contact');
 			} else {
 				const newItem = await API.fetchPost(newContact);
-				this.savedContact(newItem);
+				savedContact(newItem);
 			}
 		} catch ({ message }) {
-			Notify.failure(`${message}`);
-		}
-	};
-
-	handleEditContact = e => {
-		const value = e.currentTarget.dataset;
-		this.scrollToTop();
-		this.setState({
-			contact: { id: value.id, name: value.name, number: value.number, edit: true },
-		});
-	};
-
-	onClearForm = ({ code }) => {
-		if (code === 'Escape') {
-			this.setState({
-				contact: { id: '', name: '', number: '', edit: false },
+			toast.error(`Error: ${message}`, {
+				position: 'top-right',
+				autoClose: 5000,
+				hideProgressBar: false,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+				progress: undefined,
+				theme: 'colored',
 			});
 		}
+		window.addEventListener('keydown', onClearForm);
 	};
 
-	savedContact = ({ id, name, number }) => {
-		if (this.state.contact.edit) {
-			const newContacts = this.state.contacts.map(item => {
+	const handleEditContact = ({ currentTarget, target }) => {
+		if (target.classList.contains('del-button')) {
+			return;
+		}
+		setActive(true);
+		setButton('Edit contact');
+		const value = currentTarget.dataset;
+		scrollToTop();
+		setContact({ id: value.id, name: value.name, number: value.number, edit: true });
+		window.addEventListener('keydown', onClearForm);
+	};
+
+	const onClearForm = ({ code }) => {
+		if (code === 'Escape') {
+			setContact({ id: '', name: '', number: '', edit: false });
+			window.removeEventListener('keydown', onClearForm);
+		}
+	};
+
+	const savedContact = ({ id, name, number }) => {
+		if (active) {
+			const newContacts = contacts.map(item => {
 				if (item.id === id) {
 					return { id, name, number };
 				} else return item;
 			});
-			this.setState({ contacts: newContacts, contact: { edit: false } });
+			setContacts(newContacts);
+			setActive(false);
 		} else {
-			this.setState(prevState => {
-				const newState = {
-					contacts: [
-						...prevState.contacts,
-						{
-							id,
-							name,
-							number,
-						},
-					],
-				};
-
-				return newState;
-			});
+			setContacts([
+				...contacts,
+				{
+					id,
+					name,
+					number,
+				},
+			]);
 		}
 	};
 
-	handleDelClick = async ({ target }) => {
-		this.setState({ active: true });
+	const handleDelClick = async ({ target }) => {
+		setActive(true);
 		const updatedContacts = [];
-		for (const contact of this.state.contacts) {
+		for (const contact of contacts) {
 			if (contact.id === target.id) {
 				try {
 					await API.fetchDel(contact.id);
 				} catch ({ message }) {
-					Notify.failure('Removal error!');
-					updatedContacts.push(contact);
+					toast.error(`Removal error: ${message}`, {
+						position: 'top-right',
+						autoClose: 5000,
+						hideProgressBar: false,
+						closeOnClick: true,
+						pauseOnHover: true,
+						draggable: true,
+						progress: undefined,
+						theme: 'colored',
+					});
+					// updatedContacts.push(contact);
 				}
 			} else {
 				updatedContacts.push(contact);
 			}
 		}
-		this.setState({ contacts: updatedContacts, active: false });
+		setContacts(updatedContacts);
+		setContact({ id: '', name: '', number: '', edit: false });
+		setActive(false);
 	};
 
-	scrollToTop() {
+	const scrollToTop = () => {
 		window.scrollTo({
 			top: 0,
 			behavior: 'smooth',
 		});
-	}
+	};
 
-	render() {
-		return (
-			<div className='container'>
-				<h1 className='title-name'>Phonebook</h1>
+	return (
+		<div className='container'>
+			<h1 className='title-name'>Phonebook</h1>
 
-				<ContactForm
-					onSubmitForm={this.handleAddContact}
-					contacts={this.state.contacts}
-					onEditValue={this.state.contact}
-				/>
+			<ContactForm
+				onSubmitForm={handleAddContact}
+				contacts={contacts}
+				onEditValue={contact}
+				nameButton={button}
+			/>
 
-				<h2 className='title-name'>Contacts</h2>
+			<h2 className='title-name'>Contacts</h2>
 
-				<Filter onFiltred={this.handlerOnFitred} value={this.state.filter} />
+			<Filter onFiltred={handlerOnFitred} value={filter} />
 
-				<ContactList
-					contacts={this.state.contacts}
-					filter={this.state.filter}
-					onDeleteContact={this.handleDelClick}
-					enable={this.state.active}
-					onEdit={this.handleEditContact}
-				/>
-			</div>
-		);
-	}
+			<ContactList
+				contacts={filteredContacts}
+				onDeleteContact={handleDelClick}
+				enable={active}
+				onEdit={handleEditContact}
+			/>
+			<ToastContainer position='top-right' autoClose={5000} hideProgressBar={false} />
+		</div>
+	);
 }
 
 export default App;
