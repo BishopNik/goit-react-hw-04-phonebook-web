@@ -7,7 +7,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import './style.css';
 import 'react-toastify/dist/ReactToastify.css';
 
-function ContactForm({ contacts, onSubmitForm, onEditValue, nameButton }) {
+function ContactForm({ onSubmitForm, onEditValue, nameButton }) {
+	// eslint-disable-next-line no-unused-vars
 	const [id, setId] = useState('');
 	const [name, setName] = useState('');
 	const [number, setNumber] = useState('');
@@ -17,6 +18,7 @@ function ContactForm({ contacts, onSubmitForm, onEditValue, nameButton }) {
 		setId(id);
 		setName(name);
 		setNumber(number);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [onEditValue]);
 
 	const schema = yup.object({
@@ -45,19 +47,14 @@ function ContactForm({ contacts, onSubmitForm, onEditValue, nameButton }) {
 	const handleSubmit = e => {
 		e.preventDefault();
 
+		const validateObj = { name, number };
 		schema
-			.validate({ name, number })
-			.then(() => {
-				const checkName = contacts.find(
-					contact => contact.name.toLowerCase() === name.toLowerCase()
-				);
-				if (checkName && !onEditValue.edit) {
-					alert(`${checkName.name} is already in contacts.`);
-					return;
-				}
-				onSubmitForm({ id, name, number });
-				setName('');
-				setNumber('');
+			.validate(validateObj)
+			.then(async () => {
+				const res = await onSubmitForm({ id, name, number });
+				setId(res.id);
+				setName(res.name);
+				setNumber(res.number);
 			})
 			.catch(validationErrors => {
 				toast.error(`Error: ${validationErrors.errors}`, {
@@ -114,14 +111,6 @@ function ContactForm({ contacts, onSubmitForm, onEditValue, nameButton }) {
 }
 
 ContactForm.propTypes = {
-	contacts: PropTypes.arrayOf(
-		PropTypes.exact({
-			id: PropTypes.string.isRequired,
-			name: PropTypes.string.isRequired,
-			number: PropTypes.string.isRequired,
-			edit: PropTypes.bool,
-		})
-	).isRequired,
 	onEditValue: PropTypes.exact({
 		id: PropTypes.string.isRequired,
 		name: PropTypes.string.isRequired,

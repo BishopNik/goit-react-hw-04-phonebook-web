@@ -5,8 +5,8 @@ import PropTypes from 'prop-types';
 import { ToastContainer, toast } from 'react-toastify';
 import * as API from './fetch_api';
 import Filter from './filter';
-import ContactList from './contact';
-import ContactForm from './forms';
+import ContactList from './contactlist';
+import ContactForm from './contactform';
 import './style.css';
 
 function App() {
@@ -63,16 +63,16 @@ function App() {
 		setFilter(target.value);
 	};
 
-	const handleAddContact = async newContact => {
+	const addContact = async newContact => {
+		const { id, name, number } = newContact;
 		try {
 			if (contact.edit) {
-				const { id, name, number } = newContact;
 				const edCont = { id, name, number };
 				const editItem = await API.fetchPut(edCont);
 				savedContact(editItem);
 				setButton('Add contact');
 			} else {
-				const newItem = await API.fetchPost(newContact);
+				const newItem = await API.fetchPost({ name, number });
 				savedContact(newItem);
 			}
 		} catch ({ message }) {
@@ -90,6 +90,28 @@ function App() {
 		window.addEventListener('keydown', onClearForm);
 	};
 
+	const handleAddContact = async newContact => {
+		const checkName = contacts.find(
+			contact => contact.name.toLowerCase() === newContact.name.toLowerCase()
+		);
+		if (checkName && !contact.edit) {
+			toast.error(`${checkName.name} is already in contacts.`, {
+				position: 'top-right',
+				autoClose: 5000,
+				hideProgressBar: false,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+				progress: undefined,
+				theme: 'colored',
+			});
+
+			return newContact;
+		}
+		addContact(newContact);
+		return { id: '', name: '', number: '' };
+	};
+
 	const handleEditContact = ({ currentTarget, target }) => {
 		if (target.classList.contains('del-button')) {
 			return;
@@ -105,6 +127,8 @@ function App() {
 	const onClearForm = ({ code }) => {
 		if (code === 'Escape') {
 			setContact({ id: '', name: '', number: '', edit: false });
+			setActive(false);
+			setButton('Add contact');
 			window.removeEventListener('keydown', onClearForm);
 		}
 	};
