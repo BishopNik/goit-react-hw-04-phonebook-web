@@ -1,42 +1,29 @@
 /** @format */
 
 import { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import * as API from './fetch_api';
 import Filter from './filter';
 import ContactList from './contactlist';
 import ContactForm from './contactform';
+import toastWindow from './toastwindow.js';
 import './style.css';
 
+const DEFAULTCONTACTS = [
+	{ id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
+	{ id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
+	{ id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
+	{ id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
+];
+
 function App() {
-	const [contacts, setContacts] = useState([
-		{ id: 'id-1', name: 'Rosie Simpson', number: '459-12-56', edit: false },
-		{ id: 'id-2', name: 'Hermione Kline', number: '443-89-12', edit: false },
-		{ id: 'id-3', name: 'Eden Clements', number: '645-17-79', edit: false },
-		{ id: 'id-4', name: 'Annie Copeland', number: '227-91-26', edit: false },
-	]);
+	const [contacts, setContacts] = useState([]);
 	const [contact, setContact] = useState({ id: '', name: '', number: '', edit: false });
 	const [filter, setFilter] = useState('');
 	const [active, setActive] = useState(false);
-	const [filteredContacts, setFiltredContacts] = useState(contacts);
-	const [isFirstRender, setIsFilterRender] = useState(true);
 	const [button, setButton] = useState('Add contact');
 
 	useEffect(() => {
-		const filteredContacts = contacts.filter(contact => {
-			const searchName = contact.name.toLowerCase();
-			const filterName = filter.toLowerCase();
-			return searchName.includes(filterName);
-		});
-		setFiltredContacts(filteredContacts);
-	}, [filter, contacts]);
-
-	useEffect(() => {
-		if (isFirstRender) {
-			setIsFilterRender(false);
-			return;
-		}
 		async function fetchData() {
 			try {
 				const savedContacts = await API.fetchGet();
@@ -44,20 +31,16 @@ function App() {
 					setContacts(savedContacts);
 				}
 			} catch ({ message }) {
-				toast.error(`Error loading: ${message}`, {
-					position: 'top-right',
-					autoClose: 5000,
-					hideProgressBar: false,
-					closeOnClick: true,
-					pauseOnHover: true,
-					draggable: true,
-					progress: undefined,
-					theme: 'colored',
-				});
+				toastWindow(`Error loading: ${message}`);
+				setContacts(DEFAULTCONTACTS);
 			}
 		}
 		fetchData();
-	}, [isFirstRender]);
+	}, []);
+
+	const filteredContacts = contacts.filter(contact =>
+		contact.name.toLowerCase().includes(filter.toLowerCase())
+	);
 
 	const handlerOnFitred = ({ target }) => {
 		setFilter(target.value);
@@ -76,16 +59,7 @@ function App() {
 				savedContact(newItem);
 			}
 		} catch ({ message }) {
-			toast.error(`Error: ${message}`, {
-				position: 'top-right',
-				autoClose: 5000,
-				hideProgressBar: false,
-				closeOnClick: true,
-				pauseOnHover: true,
-				draggable: true,
-				progress: undefined,
-				theme: 'colored',
-			});
+			toastWindow(`Error: ${message}`);
 		}
 		window.addEventListener('keydown', onClearForm);
 	};
@@ -95,17 +69,7 @@ function App() {
 			contact => contact.name.toLowerCase() === newContact.name.toLowerCase()
 		);
 		if (checkName && !contact.edit) {
-			toast.error(`${checkName.name} is already in contacts.`, {
-				position: 'top-right',
-				autoClose: 5000,
-				hideProgressBar: false,
-				closeOnClick: true,
-				pauseOnHover: true,
-				draggable: true,
-				progress: undefined,
-				theme: 'colored',
-			});
-
+			toastWindow(`${checkName.name} is already in contacts.`);
 			return newContact;
 		}
 		addContact(newContact);
@@ -162,16 +126,7 @@ function App() {
 				try {
 					await API.fetchDel(contact.id);
 				} catch ({ message }) {
-					toast.error(`Removal error: ${message}`, {
-						position: 'top-right',
-						autoClose: 5000,
-						hideProgressBar: false,
-						closeOnClick: true,
-						pauseOnHover: true,
-						draggable: true,
-						progress: undefined,
-						theme: 'colored',
-					});
+					toastWindow(`Removal error: ${message}`);
 					updatedContacts.push(contact);
 				}
 			} else {
@@ -215,10 +170,5 @@ function App() {
 		</div>
 	);
 }
-
-App.propTypes = {
-	name: PropTypes.string,
-	number: PropTypes.string,
-};
 
 export default App;

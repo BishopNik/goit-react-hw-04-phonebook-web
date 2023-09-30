@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import * as yup from 'yup';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
+import toastWindow from './toastwindow.js';
 import './style.css';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -57,16 +58,7 @@ function ContactForm({ onSubmitForm, onEditValue, nameButton }) {
 				setNumber(res.number);
 			})
 			.catch(validationErrors => {
-				toast.error(`Error: ${validationErrors.errors}`, {
-					position: 'top-right',
-					autoClose: 5000,
-					hideProgressBar: false,
-					closeOnClick: true,
-					pauseOnHover: true,
-					draggable: true,
-					progress: undefined,
-					theme: 'colored',
-				});
+				toastWindow(`Error: ${validationErrors.errors}`);
 			});
 	};
 
