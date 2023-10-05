@@ -3,10 +3,8 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import * as yup from 'yup';
-import { ToastContainer } from 'react-toastify';
 import toastWindow from './toastwindow.js';
 import './style.css';
-import 'react-toastify/dist/ReactToastify.css';
 
 function ContactForm({ onSubmitForm, onEditValue, nameButton }) {
 	// eslint-disable-next-line no-unused-vars
@@ -97,7 +95,6 @@ function ContactForm({ onSubmitForm, onEditValue, nameButton }) {
 					{nameButton}
 				</button>
 			</form>
-			<ToastContainer position='top-right' autoClose={5000} hideProgressBar={false} />
 		</>
 	);
 }

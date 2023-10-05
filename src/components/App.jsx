@@ -7,6 +7,7 @@ import Filter from './filter';
 import ContactList from './contactlist';
 import ContactForm from './contactform';
 import toastWindow from './toastwindow.js';
+import 'react-toastify/dist/ReactToastify.css';
 import './style.css';
 
 const DEFAULTCONTACTS = [
